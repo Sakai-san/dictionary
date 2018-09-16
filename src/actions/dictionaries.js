@@ -11,6 +11,22 @@ export const fetchDictionaries: Function = (): Function => {
       type: FETCHING_DICTIONARIES
     });
 
+    if (localStorage) {
+      const localStorageDictionaries = localStorage.getItem("dictionaries");
+      if (localStorageDictionaries) {
+        Promise.resolve(JSON.parse(localStorageDictionaries)).then(
+          (dictionaries): Promise<any> => {
+            dispatch({
+              type: FETCH_DICTIONARIES,
+              dictionaries
+            });
+            return dictionaries;
+          }
+        );
+        return;
+      }
+    }
+
     Promise.resolve(dictionaries).then(
       (dictionaries): Promise<any> => {
         dispatch({

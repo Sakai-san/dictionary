@@ -2,6 +2,7 @@
 import React, { type Element } from "react";
 import { connect } from "react-redux";
 import { withState, compose, withHandlers, lifecycle } from "recompose";
+import { Link } from "react-router-dom";
 import { fetchDictionaries, updateDictionary } from "./actions/dictionaries";
 import cloneDeep from "lodash.clonedeep";
 import styled from "styled-components";
@@ -16,15 +17,19 @@ export type DictionaryPropsInner = DictionaryProps & {
   clickHandler: Function,
   changeHandler: Function,
   submitHandler: Function,
+  match: Object,
+  renderRow: Function,
   dictionaries: Object,
   fetchDictionaries: Function,
-  updateDictionary: Function,
-  match: Object
+  updateDictionary: Function
 };
 
-const DictionaryWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
+const Container = styled.div`
+  margin: 40px;
+`;
+
+const HomeLink = styled.div`
+  margin-bottom: 40px;
 `;
 
 const Row = styled.div`
@@ -33,19 +38,53 @@ const Row = styled.div`
 `;
 
 const Cell = styled.div`
+  padding: 10px;
   border: 1px solid grey;
 `;
 
+const doRenderRow = (props: DictionaryPropsInner) => (
+  row: Object,
+  rowIndex: number
+) => {
+  const coordinates = props.editingCell ? props.editingCell.split(",") : null;
+  return (
+    <Row key={rowIndex}>
+      {row.map((col, colIndex) => {
+        if (
+          coordinates &&
+          parseInt(coordinates[0]) === rowIndex &&
+          parseInt(coordinates[1]) === colIndex
+        ) {
+          return (
+            <form
+              key={`${rowIndex},${colIndex}`}
+              onSubmit={props.submitHandler}
+            >
+              <input
+                onChange={props.changeHandler(rowIndex, colIndex)}
+                value={col}
+              />
+            </form>
+          );
+        } else {
+          return (
+            <Cell
+              key={`${rowIndex},${colIndex}`}
+              onClick={props.clickHandler(rowIndex, colIndex)}
+            >
+              {col}
+            </Cell>
+          );
+        }
+      })}
+    </Row>
+  );
+};
+
 const Dictionary = ({
   dictionaries,
-  clickHandler,
-  changeHandler,
-  updatedRows,
-  editingCell,
-  submitHandler,
-  inputValue,
-  setInputValue,
-  match
+  match,
+  renderRow
 }: DictionaryPropsInner): Element<any> | null => {
   if (
     !match ||
@@ -56,38 +95,14 @@ const Dictionary = ({
     return null;
   }
 
-  return dictionaries[match.params.name].terms.map((row, rowIndex) => {
-    const coordinates = editingCell ? editingCell.split(",") : null;
-    return (
-      <Row key={rowIndex}>
-        {row.map((col, colIndex) => {
-          if (
-            coordinates &&
-            parseInt(coordinates[0]) === rowIndex &&
-            parseInt(coordinates[1]) === colIndex
-          ) {
-            return (
-              <form key={`${rowIndex},${colIndex}`} onSubmit={submitHandler}>
-                <input
-                  onChange={changeHandler(rowIndex, colIndex)}
-                  value={col}
-                />
-              </form>
-            );
-          } else {
-            return (
-              <Cell
-                key={`${rowIndex},${colIndex}`}
-                onClick={clickHandler(rowIndex, colIndex)}
-              >
-                {col}
-              </Cell>
-            );
-          }
-        })}
-      </Row>
-    );
-  });
+  return (
+    <Container>
+      <HomeLink>
+        <Link to="/">&#8592; Home</Link>
+      </HomeLink>
+      {dictionaries[match.params.name].terms.map(renderRow)}
+    </Container>
+  );
 };
 
 const extendsWithHandler = withHandlers({
@@ -107,6 +122,9 @@ const extendsWithHandler = withHandlers({
   },
   submitHandler: (props: DictionaryPropsInner) => (event: Object): void => {
     props.setEditingCell("");
+    if (localStorage) {
+      localStorage.setItem("dictionaries", JSON.stringify(props.dictionaries));
+    }
   }
 });
 
@@ -133,5 +151,8 @@ export default compose(
   ),
   withState("editingCell", "setEditingCell", ""),
   extendsWithHandler,
+  withHandlers({
+    renderRow: doRenderRow
+  }),
   withLifeCyle
 )(Dictionary);
