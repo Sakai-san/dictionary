@@ -13,17 +13,13 @@ export type DictionaryProps = {};
 export type DictionaryPropsInner = DictionaryProps & {
   editingCell: string,
   setEditingCell: Function,
-  updatedRows: Array<Array<string>>,
-  setRows: Function,
   clickHandler: Function,
   changeHandler: Function,
   submitHandler: Function,
 
   dictionaries: Object,
   fetchDictionaries: Function,
-  updateDictionary: Function,
-  inputValue: string,
-  setInputValue: Function
+  updateDictionary: Function
 };
 
 const DictionaryWrapper = styled.div`
@@ -114,7 +110,8 @@ const mapStateToProps: Function = (state: Object): Object => ({
 
 const mapDispatchToProps: Function = (dispatch: Function): Object => ({
   fetchDictionaries: (): Promise<any> => dispatch(fetchDictionaries()),
-  updateDictionary: (name, terms) => dispatch(updateDictionary(name, terms))
+  updateDictionary: (dictionaryName, terms) =>
+    dispatch(updateDictionary(dictionaryName, terms))
 });
 
 const withLifeCyle = lifecycle({

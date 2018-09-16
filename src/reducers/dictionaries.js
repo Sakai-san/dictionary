@@ -11,7 +11,7 @@ type DictionariesState = {
     id: number,
     terms: Array<Array<string>>
   },
-  isFetching: boolean
+  isFetching?: boolean
 };
 
 export default (state: DictionariesState = {}, action: Object): Object => {
