@@ -1,21 +1,29 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+// @flow
+import React, { type Element } from "react";
+import styled from "styled-components";
+import Dictionary from "./Dictionary";
+import "./App.css";
 
-class App extends Component {
-  render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
-        </header>
-        <p className="App-intro">
-          To get started, edit <code>src/App.js</code> and save to reload.
-        </p>
-      </div>
-    );
-  }
-}
+const dictionary: Object = {
+  name: "color",
+  id: 1,
+  terms: [
+    ["Stonegrey", "Dark Grey"],
+    ["Midnight Black", "Black"],
+    ["Mystic Silver", "Silver"]
+  ]
+};
+
+const Container = styled.div`
+  margin: 100px;
+`;
+
+const App = (): Element<any> => {
+  return (
+    <Container>
+      <Dictionary dictionary={dictionary} />
+    </Container>
+  );
+};
 
 export default App;
