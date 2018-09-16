@@ -1,0 +1,11 @@
+{
+  "color": {
+    "name": "color",
+    "id": 1,
+    "terms": [
+      ["Stonegrey", "Dark Grey"],
+      ["Midnight Black", "Black"],
+      ["Mystic Silver", "Silver"]
+    ]
+  }
+}

@@ -1,12 +1,14 @@
 // @flow
 import React, { type Element } from "react";
+import { connect } from "react-redux";
 import { withState, compose, withHandlers, lifecycle } from "recompose";
+import { fetchDictionaries, updateDictionary } from "./actions/dictionaries";
 import cloneDeep from "lodash.clonedeep";
 import styled from "styled-components";
 
-export type DictionaryProps = {
-  dictionary: Object
-};
+const HARD_CODED_DIC_KEY: string = "color";
+
+export type DictionaryProps = {};
 
 export type DictionaryPropsInner = DictionaryProps & {
   editingCell: string,
@@ -15,7 +17,13 @@ export type DictionaryPropsInner = DictionaryProps & {
   setRows: Function,
   clickHandler: Function,
   changeHandler: Function,
-  submitHandler: Function
+  submitHandler: Function,
+
+  dictionaries: Object,
+  fetchDictionaries: Function,
+  updateDictionary: Function,
+  inputValue: string,
+  setInputValue: Function
 };
 
 const DictionaryWrapper = styled.div`
@@ -32,30 +40,21 @@ const Cell = styled.div`
   border: 1px solid grey;
 `;
 
-/*
-const renderRow = (row, index) => {
-  return (
-    <div>
-      <button onClick={clickHandler}>Edit</button>
-      <Row key={index}>
-        <div>{row[0]}</div>
-        <div>{row[1]}</div>
-      </Row>
-    </div>
-  );
-};
-  <DictionaryWrapper>{dictionary.terms.map(renderRow)}</DictionaryWrapper>
-*/
-
 const Dictionary = ({
-  dictionary,
+  dictionaries,
   clickHandler,
   changeHandler,
   updatedRows,
   editingCell,
-  submitHandler
-}: DictionaryPropsInner): Element<any> => {
-  return dictionary.terms.map((row, rowIndex) => {
+  submitHandler,
+  inputValue,
+  setInputValue
+}: DictionaryPropsInner): Element<any> | null => {
+  if (!dictionaries[HARD_CODED_DIC_KEY]) {
+    return null;
+  }
+
+  return dictionaries[HARD_CODED_DIC_KEY].terms.map((row, rowIndex) => {
     const coordinates = editingCell ? editingCell.split(",") : null;
     return (
       <Row key={rowIndex}>
@@ -69,7 +68,7 @@ const Dictionary = ({
               <form key={`${rowIndex},${colIndex}`} onSubmit={submitHandler}>
                 <input
                   onChange={changeHandler(rowIndex, colIndex)}
-                  value={updatedRows[rowIndex][colIndex]}
+                  value={col}
                 />
               </form>
             );
@@ -100,18 +99,36 @@ const extendsWithHandler = withHandlers({
     col: number
   ) => (event: Object): void => {
     const newValue = event.target.value;
-    const rowsCopy = cloneDeep(props.updatedRows);
+    const rowsCopy = cloneDeep(props.dictionaries[HARD_CODED_DIC_KEY].terms);
     rowsCopy[row][col] = newValue;
-    props.setRows(rowsCopy);
+    props.updateDictionary(HARD_CODED_DIC_KEY, rowsCopy);
   },
   submitHandler: (props: DictionaryPropsInner) => (event: Object): void => {
-    event.preventDefault();
     props.setEditingCell("");
   }
 });
 
+const mapStateToProps: Function = (state: Object): Object => ({
+  dictionaries: state.dictionaries
+});
+
+const mapDispatchToProps: Function = (dispatch: Function): Object => ({
+  fetchDictionaries: (): Promise<any> => dispatch(fetchDictionaries()),
+  updateDictionary: (name, terms) => dispatch(updateDictionary(name, terms))
+});
+
+const withLifeCyle = lifecycle({
+  componentDidMount() {
+    this.props.fetchDictionaries();
+  }
+});
+
 export default compose(
+  connect(
+    mapStateToProps,
+    mapDispatchToProps
+  ),
   withState("editingCell", "setEditingCell", ""),
-  withState("updatedRows", "setRows", props => props.dictionary.terms),
-  extendsWithHandler
+  extendsWithHandler,
+  withLifeCyle
 )(Dictionary);
