@@ -16,10 +16,10 @@ export type DictionaryPropsInner = DictionaryProps & {
   clickHandler: Function,
   changeHandler: Function,
   submitHandler: Function,
-
   dictionaries: Object,
   fetchDictionaries: Function,
-  updateDictionary: Function
+  updateDictionary: Function,
+  match: Object
 };
 
 const DictionaryWrapper = styled.div`
@@ -44,13 +44,19 @@ const Dictionary = ({
   editingCell,
   submitHandler,
   inputValue,
-  setInputValue
+  setInputValue,
+  match
 }: DictionaryPropsInner): Element<any> | null => {
-  if (!dictionaries[HARD_CODED_DIC_KEY]) {
+  if (
+    !match ||
+    !match.params ||
+    !match.params.name ||
+    !dictionaries[match.params.name]
+  ) {
     return null;
   }
 
-  return dictionaries[HARD_CODED_DIC_KEY].terms.map((row, rowIndex) => {
+  return dictionaries[match.params.name].terms.map((row, rowIndex) => {
     const coordinates = editingCell ? editingCell.split(",") : null;
     return (
       <Row key={rowIndex}>
@@ -104,6 +110,12 @@ const extendsWithHandler = withHandlers({
   }
 });
 
+const withLifeCyle = lifecycle({
+  componentDidMount() {
+    this.props.fetchDictionaries();
+  }
+});
+
 const mapStateToProps: Function = (state: Object): Object => ({
   dictionaries: state.dictionaries
 });
@@ -112,12 +124,6 @@ const mapDispatchToProps: Function = (dispatch: Function): Object => ({
   fetchDictionaries: (): Promise<any> => dispatch(fetchDictionaries()),
   updateDictionary: (dictionaryName, terms) =>
     dispatch(updateDictionary(dictionaryName, terms))
-});
-
-const withLifeCyle = lifecycle({
-  componentDidMount() {
-    this.props.fetchDictionaries();
-  }
 });
 
 export default compose(
