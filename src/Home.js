@@ -10,6 +10,11 @@ const Container = styled.div`
   margin: 30px;
 `;
 
+const Header = styled.div`
+  display: flex;
+  justify-content: space-around;
+`;
+
 export type HomeProps = {};
 
 export type HomePropsInner = HomeProps & {
@@ -24,7 +29,10 @@ const Home = ({ dictionaries }: HomePropsInner): Element<any> | null => {
 
   return (
     <Container>
-      <h1>Dictionaries</h1>
+      <Header>
+        <h1>Dictionaries</h1>
+        <Link to="/newDictionary"> Create a dictionary </Link>
+      </Header>
       {Object.values(dictionaries).map(
         (dictionary: any, index: number): Element<any> => {
           return (

@@ -17,19 +17,6 @@ export const hasDuplicationInconsistency = (dictionary: Object): boolean => {
  * @param   {Object}
  * @returns {boolean}
  */
-export const hasChainInconsistency2 = (dictionary: Object): boolean => {
-  const map = new Map(dictionary.terms);
-  let hasInconsistency = false;
-  map.forEach((val, key) => {
-    if (map.get(val) !== undefined) {
-      hasInconsistency = true;
-      console.log("hasChainInconsistency", val);
-      return;
-    }
-  });
-  return hasInconsistency;
-};
-
 export const hasChainInconsistency = (dictionary: Object): boolean => {
   const map = new Map(dictionary.terms);
   let hasInconsistency = false;

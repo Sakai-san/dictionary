@@ -34,10 +34,13 @@ const HomeLink = styled.div`
 
 const Row = styled.div`
   display: flex;
-  justify-content: space-around;
+  flex-direction: row;
 `;
 
 const Cell = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   padding: 10px;
   border: 1px solid grey;
 `;
@@ -52,8 +55,8 @@ const doRenderRow = (props: DictionaryPropsInner) => (
       {row.map((col, colIndex) => {
         if (
           coordinates &&
-          parseInt(coordinates[0]) === rowIndex &&
-          parseInt(coordinates[1]) === colIndex
+          parseInt(coordinates[0], 10) === rowIndex &&
+          parseInt(coordinates[1], 10) === colIndex
         ) {
           return (
             <form
