@@ -4,10 +4,12 @@ import { connect } from "react-redux";
 import { withState, compose, withHandlers, lifecycle } from "recompose";
 import { Link } from "react-router-dom";
 import { fetchDictionaries, updateDictionary } from "./actions/dictionaries";
+import {
+  hasDuplicationInconsistency,
+  hasChainInconsistency
+} from "./helpers/dictionaryValidation";
 import cloneDeep from "lodash.clonedeep";
 import styled from "styled-components";
-
-const HARD_CODED_DIC_KEY: string = "color";
 
 export type DictionaryProps = {};
 
@@ -45,6 +47,25 @@ const Cell = styled.div`
   border: 1px solid grey;
 `;
 
+const Input = styled.input`
+  padding: 10px;
+`;
+
+const Warning = styled.div`
+  margin-top: 15px;
+  color: #856404;
+`;
+
+const Danger = styled.div`
+  margin-top: 15px;
+  color: #721c24;
+`;
+
+const Valid = styled.div`
+  margin-top: 15px;
+  color: #155724;
+`;
+
 const doRenderRow = (props: DictionaryPropsInner) => (
   row: Object,
   rowIndex: number
@@ -63,7 +84,7 @@ const doRenderRow = (props: DictionaryPropsInner) => (
               key={`${rowIndex},${colIndex}`}
               onSubmit={props.submitHandler}
             >
-              <input
+              <Input
                 onChange={props.changeHandler(rowIndex, colIndex)}
                 value={col}
               />
@@ -97,13 +118,24 @@ const Dictionary = ({
   ) {
     return null;
   }
-
+  const currentDictionary: Object = dictionaries[match.params.name];
+  const hasDuplication: boolean = hasDuplicationInconsistency(
+    currentDictionary
+  );
+  const hasChain: boolean = hasChainInconsistency(currentDictionary);
   return (
     <Container>
       <HomeLink>
         <Link to="/">&#8592; Home</Link>
       </HomeLink>
       {dictionaries[match.params.name].terms.map(renderRow)}
+      {hasDuplication && (
+        <Warning> Dictionary has duplication or fork inconsistencies</Warning>
+      )}
+      {hasChain && (
+        <Danger> Dictionary has chain or cycle inconsistencies</Danger>
+      )}
+      {!hasDuplication && !hasChain && <Valid> Dictionary valid</Valid>}
     </Container>
   );
 };
@@ -119,9 +151,11 @@ const extendsWithHandler = withHandlers({
     col: number
   ) => (event: Object): void => {
     const newValue = event.target.value;
-    const rowsCopy = cloneDeep(props.dictionaries[HARD_CODED_DIC_KEY].terms);
+    const rowsCopy = cloneDeep(
+      props.dictionaries[props.match.params.name].terms
+    );
     rowsCopy[row][col] = newValue;
-    props.updateDictionary(HARD_CODED_DIC_KEY, rowsCopy);
+    props.updateDictionary(props.match.params.name, rowsCopy);
   },
   submitHandler: (props: DictionaryPropsInner) => (event: Object): void => {
     props.setEditingCell("");

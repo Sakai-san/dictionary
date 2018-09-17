@@ -31,7 +31,6 @@ const Home = ({ dictionaries }: HomePropsInner): Element<any> | null => {
     <Container>
       <Header>
         <h1>Dictionaries</h1>
-        <Link to="/newDictionary"> Create a dictionary </Link>
       </Header>
       {Object.values(dictionaries).map(
         (dictionary: any, index: number): Element<any> => {
